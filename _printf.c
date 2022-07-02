@@ -1,36 +1,50 @@
-#include"main.h"
-#include<stdarg.h>
-/**
- * _printf - is a function that selects the correct function to print.
- * @format: identifier to look for.
- * Return: the length of the string.
- */
-int _printf(const char *format, ...);
-{
-va_list args;
-int i = 0,
-int n_printed = 0;
+#include "main.h"
 
-va_start(args, format);
-if (format == NULL || (format[0] == '%' && format[1] == '\0'))
-return (-1);
-here:
-while (format[i] != '\0')
-j = 13;
-while (j >= 0)
+/**
+ * _printf - prints anything
+ * @format: the format string
+ *
+ * Return: number of bytes printed
+ */
+/* Code Credit : Martins Akhivbareme & Bolatito Alaba */
+int _printf(const char *format, ...)
 {
-if (m[j].id[0] == format[i] && m[j].id[1] == format[i + 1])
-{
-len += m[j].f(args);
-i = i + 2;
-goto Here;
-}
-j--;
-}
-_putchar(format[i]);
-len++;
-i++;
-}
-va_end(args);
-return (len);
+	int sum = 0;
+	va_list ap;
+	char *p, *start;
+	params_t params = PARAMS_INIT;
+
+	va_start(ap, format);
+
+	if (!format || (format[0] == '%' && !format[1]))
+		return (-1);
+	if (format[0] == '%' && format[1] == ' ' && !format[2])
+		return (-1);
+	for (p = (char *)format; *p; p++)
+	{
+		init_params(&params, ap);
+		if (*p != '%')
+		{
+			sum += _putchar(*p);
+			continue;
+		}
+		start = p;
+		p++;
+		while (get_flag(p, &params)) /* while char at p is flag char */
+		{
+			p++; /* next char */
+		}
+		p = get_width(p, &params, ap);
+		p = get_precision(p, &params, ap);
+		if (get_modifier(p, &params))
+			p++;
+		if (!get_specifier(p))
+			sum += print_from_to(start, p,
+								 params.l_modifier || params.h_modifier ? p - 1 : 0);
+		else
+			sum += get_print_func(p, ap, &params);
+	}
+	_putchar(BUF_FLUSH);
+	va_end(ap);
+	return (sum);
 }
